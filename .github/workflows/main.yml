@@ -1,0 +1,61 @@
+name: CI/CD Pipeline for Backend
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '14' # or the version specified in your project
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build project
+      run: npm run build || echo "No build script defined"
+
+    - name: Prepare artifact
+      run: |
+        mkdir -p artifact
+        shopt -s extglob
+        cp -R !(artifact) artifact/
+        rm -rf artifact/.git
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: backend-build
+        path: artifact/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: backend-build
+
+    - name: Deploy to Render
+      env:
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      run: |
+        curl -X POST "https://api.render.com/deploy/srv-cp64em821fec738avln0?key=Bp4aEi7Ou-A" \
