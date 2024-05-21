@@ -6,9 +6,11 @@ const logout = require('../controllers/user/logout')
 const verify = require('../controllers/user/verify')
 const forgotPassword = require('../controllers/user/forgotPassword')
 const resetPassword = require('../controllers/user/resetPassword')
+const getUser = require('../controllers/user/getUsers')
 
 
 router.post('/', registerUser)
+router.get('/', getUser)
 
 router.post('/verify/:verificationToken', verify)
 
